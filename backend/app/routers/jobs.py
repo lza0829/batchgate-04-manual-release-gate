@@ -2,7 +2,7 @@ from fastapi import APIRouter, HTTPException
 
 from app.db import connect
 from app.repositories import jobs as jobs_repo
-from app.schemas.entities import MaxAttemptsBody
+from app.schemas.entities import MaxAttemptsBody, ReleaseGateBody
 
 router = APIRouter(tags=["jobs"])
 
@@ -24,6 +24,20 @@ def patch_max_attempts(job_id: int, body: MaxAttemptsBody):
         if not job:
             raise HTTPException(404, "job not found")
         jobs_repo.update_max_attempts(conn, job_id, body.max_attempts)
+        conn.commit()
+        return jobs_repo.get_job(conn, job_id)
+    finally:
+        conn.close()
+
+
+@router.patch("/jobs/{job_id}/release-gate")
+def patch_release_gate(job_id: int, body: ReleaseGateBody):
+    conn = connect()
+    try:
+        job = jobs_repo.get_job(conn, job_id)
+        if not job:
+            raise HTTPException(404, "job not found")
+        jobs_repo.update_release_gate(conn, job_id, body.requires_release)
         conn.commit()
         return jobs_repo.get_job(conn, job_id)
     finally:

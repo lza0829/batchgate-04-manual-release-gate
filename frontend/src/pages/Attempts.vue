@@ -27,7 +27,7 @@ watch(orchId, load)
 <template>
   <div class="page">
     <h1>尝试记录</h1>
-    <p class="muted">每次作业尝试的状态：success / failed / skipped_dep。</p>
+    <p class="muted">每次作业尝试的状态：success / failed / skipped_release（未放行或被拒） / skipped_dep（上游未成功）。</p>
     <p v-if="err" class="tag danger">{{ err }}</p>
     <div class="panel">
       <label>
@@ -49,7 +49,10 @@ watch(orchId, load)
             <td class="mono">{{ a.job_name }}</td>
             <td>{{ a.attempt_no }}</td>
             <td><span class="tag" :class="a.status==='success'?'ok':(a.status==='failed'?'danger':'warn')">{{ a.status }}</span></td>
-            <td class="mono">{{ JSON.stringify(a.detail) }}</td>
+            <td class="mono">
+              <div v-if="a.detail && a.detail.reason">{{ a.detail.reason }}</div>
+              <div :class="{ muted: a.detail && a.detail.reason }">{{ JSON.stringify(a.detail) }}</div>
+            </td>
           </tr>
         </tbody>
       </table>

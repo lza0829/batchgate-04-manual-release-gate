@@ -24,10 +24,13 @@ def finish_orchestration(
     orch_id: int,
     status: str,
     report: dict[str, Any],
+    *,
+    finished: bool = True,
 ) -> None:
+    # 等待人工放行（awaiting_release）时本趟尚未结束：只更新状态与报告，不写 finished_at。
     conn.execute(
         "UPDATE orchestrations SET status=?, finished_at=?, report_json=? WHERE id=?",
-        (status, _now(), json.dumps(report, ensure_ascii=False), orch_id),
+        (status, _now() if finished else None, json.dumps(report, ensure_ascii=False), orch_id),
     )
 
 
